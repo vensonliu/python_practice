@@ -1,12 +1,19 @@
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 from lib.tfutil.ann import build_ann
 from lib.dataset.tf_dataset import load_mnist
-from tensorflow.keras.utils import to_categorical
-import numpy as np
+from lib.dataset.utils import onehot_encoding, get_classes
 
-
-if __name__ == '__main__':
+def test_load_mnist():
     x_train, y_train, x_test, y_test = load_mnist()
-    model = build_ann(x_train.shape[1:], to_categorical(y_test).shape[1])
+    assert x_train.shape == (60000, 28, 28)
+    assert y_train.shape == (60000, )
+    assert x_test.shape == (10000, 28, 28)
+    assert y_test.shape == (10000, )
+    assert get_classes(y_test, False) == 10
 
-    print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    print(model)
+def test_ann():
+    x_train, y_train, x_test, y_test = load_mnist()
+    model = build_ann(x_train.shape[1:], get_classes(y_test, False))
+    assert model(x_train[0:1]).shape == (1, 10)
